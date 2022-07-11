@@ -4,5 +4,17 @@
   "description": "Panenco Node Course API",
   "main": "src/server.js",
   "author": "CasMagnus1 <cas.magnus@student.kuleuven.be>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "start": "node --es-module-specifier-resolution=node src/server.js",
+    "dev": "nodemon --es-module-specifier-resolution=node src/server.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "express": "^4.18.1"
+  },
+  "devDependencies": {
+    "nodemo": "^1.0.0",
+    "nodemon": "^2.0.19"
+  }
 }
