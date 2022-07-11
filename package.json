@@ -1,0 +1,8 @@
+{
+  "name": "panenco-node-course",
+  "version": "1.0.0",
+  "description": "Panenco Node Course API",
+  "main": "src/server.js",
+  "author": "CasMagnus1 <cas.magnus@student.kuleuven.be>",
+  "license": "MIT"
+}
