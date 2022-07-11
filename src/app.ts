@@ -1,8 +1,12 @@
 // src/app.js
 import express from 'express';
 import { UserRoute } from './controllers/users/user.route';
+import {Request, Response, NextFunction, Application} from 'express';
+type Error = {"details": string}
 
 export class App {
+  host: Application;
+
   constructor() {
     // Init server
     this.host = express();
@@ -17,7 +21,7 @@ export class App {
         res.status(404);
         res.json({"details":"page not found"});
     })
-    this.host.use((error, req, res, next) => {
+    this.host.use((error: Error, req: Request, res: Response, next: NextFunction) => {
         res.status(400);
         res.json(error);
     })

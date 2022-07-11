@@ -1,5 +1,5 @@
 // src/server.js
-import { App } from './app.js';
+import { App } from './app';
 
 const app = new App();
 app.listen();
