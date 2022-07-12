@@ -77,6 +77,15 @@ const newUserFixtureWithoutId = {name:"Cas", password:"password", email:"cas@mai
         );
         expect(_.isEqual(res,plainToInstance(UserView, newUserFixture))).true;
       });
+      it('should not create user when wrong input', async () => {
+        let res: any[];
+        await createUser(
+          { body: {"notname": 5} as any } as Request,
+          null as Response,
+          ((val) => {res = val}) as NextFunction
+        );
+        expect(res.length == 0).false;
+      });
       it('should update user', async () => {
         let res = {locals: {body: 'dummy'}};
         const shouldBe = newUserFixture;
@@ -84,9 +93,37 @@ const newUserFixtureWithoutId = {name:"Cas", password:"password", email:"cas@mai
         await patchById(
           { params: {id: "0"} as any, body: newUserFixtureWithoutId as any } as Request,
             res as any,
-          () => {}
+          (() => {}) as NextFunction
         );
         expect(_.isEqual(res.locals.body, shouldBe)).true;
+      });
+      it('should not update any users when wrong id', async () => {
+        let resGetOne: User[];
+        await getList(
+          { query: { } as any } as Request,
+          { json: (val) => (resGetOne = val) } as Response,
+          null as NextFunction
+        );
+
+        let res;
+        await patchById(
+          { params: {id: "10"} as any, body: newUserFixtureWithoutId as any } as Request,
+          { status: (val) => (res = val) as any, json: (dummy) => {}} as Response,
+          () => {}
+        );
+        expect(res == 404).true;
+
+        let resGetTwo: User[];
+        await getList(
+          { query: { } as any } as Request,
+          { json: (val) => (resGetTwo = val) } as Response,
+          null as NextFunction
+        );
+
+        expect(resGetOne.length == resGetTwo.length).true;
+        for (let i = 0; i < resGetOne.length; i++) {
+            expect(_.isEqual(resGetOne[i], resGetTwo[i])).true;
+        }
       });
       it('should delete user by id', async () => {
         let res;
@@ -102,6 +139,31 @@ const newUserFixtureWithoutId = {name:"Cas", password:"password", email:"cas@mai
             null as NextFunction
           );
           expect(res == 404).true;
+      });
+      it('should fail when delete user by wrong id', async () => {
+        let resGetOne: User[];
+        await getList(
+          { query: { } as any } as Request,
+          { json: (val) => (resGetOne = val) } as Response,
+          null as NextFunction
+        );
+
+        let resDelete;
+        await deleteById(
+          { params: {id: "10"} as any } as Request,
+          { send: (val) => (val) as any, status: (val) => (resDelete = val) as any} as Response,
+          null as NextFunction
+        );
+        expect(resDelete == 404).true;
+
+        let resGetTwo: User[];
+        await getList(
+          { query: { } as any } as Request,
+          { json: (val) => (resGetTwo = val) } as Response,
+          null as NextFunction
+        );
+
+        expect(resGetOne.length == resGetTwo.length).true;
       });
     });
   });
