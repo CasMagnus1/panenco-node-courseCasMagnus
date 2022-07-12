@@ -1,8 +1,9 @@
-import { UserStore } from "./user.store";
+import { User, UserStore } from "./user.store";
 import { NextFunction, Request, Response } from "express";
+import { SearchQuery } from "../../../contracts/search.query";
 
 
-export const getList = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const users = UserStore.find(req.query.search as string);
-    res.json(users);
+export const getList = (query: SearchQuery): [User[], number] => {
+    const users = UserStore.find(query.search);
+    return [users, users.length];
 }

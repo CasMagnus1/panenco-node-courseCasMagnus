@@ -1,14 +1,12 @@
 import { expect } from "chai";
 import { getList } from "../../controllers/users/handlers/getList.handler";
 import { User, UserStore } from "../../controllers/users/handlers/user.store";
-import { Request, Response, NextFunction } from 'express';
 import { getById } from "../../controllers/users/handlers/get.handler";
-import { UserView } from "../../contracts/user.view";
 import { createUser } from "../../controllers/users/handlers/create.handler";
-import { plainToInstance } from "class-transformer";
 import { patchById } from "../../controllers/users/handlers/update.handler";
 import _ from "lodash";
 import { deleteById } from "../../controllers/users/handlers/delete.handler";
+import { NotFound } from "@panenco/papi";
 
 const userFixtures: User[] = [
     {
@@ -32,136 +30,74 @@ const newUserFixtureWithoutId = {name:"Cas", password:"password", email:"cas@mai
       beforeEach(() => {
         UserStore.users = [...userFixtures]; // Clone the array
       });
-      it('should search users', async () => {
-        let res: User[];
-        await getList(
-          { query: { search: 'test1' } as any } as Request,
-          { json: (val) => (res = val) } as Response,
-          null as NextFunction
-        );
-        expect(res.some((x) => x.name === 'test1')).true;
+      it('should search users', () => {
+        const users = getList({search: 'test1'})[0];
+        expect(users.some((user) => user.name === 'test1')).true;
       });
-      it('should get users', async () => {
-        let res: User[];
-        await getList(
-          { query: { } as any } as Request,
-          { json: (val) => (res = val) } as Response,
-          null as NextFunction
-        );
+      it('should get users', () => {
+        let res: User[] = getList({})[0];
         expect(res.some((x) => x.name === 'test1') && res.some((x) => x.name === 'test2')).true;
       });
-      it('should get user by id', async () => {
-        let res: User;
-        await getById(
-          { params: {id: "0"} as any } as Request,
-          { json: (val) => (res = val) } as Response,
-          null as NextFunction
-        );
+      it('should get user by id', () => {
+        let res: User = getById('0');
         expect(res.name == 'test1').true;
       });
-      it('should fail when getting user by unknown id', async () => {
-        let res: number;
-        await getById(
-          { params: {id: "2"} as any } as Request,
-          { status: (val) => (res = val) as any, json: (dummy) => {}} as Response,
-          null as NextFunction
-        );
-        expect(res == 404).true;
+      it('should fail when getting user by unknown id', () => {
+        try {
+          getById('10')
+        }
+        catch (error){
+          expect(error.message == "id not found").true
+          return;
+        }
+        expect(true, "non reachable").false;
       });
-      it('should create user', async () => {
-        let res: UserView;
-        await createUser(
-          { body: newUserFixtureWithoutId as any } as Request,
-          { json: (val) => (res = val) as any} as Response,
-          null as NextFunction
-        );
-        expect(_.isEqual(res,plainToInstance(UserView, newUserFixture))).true;
+      it('should create user', () => {
+        let res = createUser(newUserFixtureWithoutId);
+        expect(res.name == newUserFixtureWithoutId.name).true;
       });
-      it('should not create user when wrong input', async () => {
-        let res: any[];
-        await createUser(
-          { body: {"notname": 5} as any } as Request,
-          null as Response,
-          ((val) => {res = val}) as NextFunction
-        );
-        expect(res.length == 0).false;
+      it('should update user', () => {
+        patchById('0', newUserFixtureWithoutId);
+        const user = getById('0');
+        expect(user.name == newUserFixtureWithoutId.name).true;
       });
-      it('should update user', async () => {
-        let res = {locals: {body: 'dummy'}};
-        const shouldBe = newUserFixture;
-        shouldBe.id = 0;
-        await patchById(
-          { params: {id: "0"} as any, body: newUserFixtureWithoutId as any } as Request,
-            res as any,
-          (() => {}) as NextFunction
-        );
-        expect(_.isEqual(res.locals.body, shouldBe)).true;
-      });
-      it('should not update any users when wrong id', async () => {
-        let resGetOne: User[];
-        await getList(
-          { query: { } as any } as Request,
-          { json: (val) => (resGetOne = val) } as Response,
-          null as NextFunction
-        );
-
-        let res;
-        await patchById(
-          { params: {id: "10"} as any, body: newUserFixtureWithoutId as any } as Request,
-          { status: (val) => (res = val) as any, json: (dummy) => {}} as Response,
-          () => {}
-        );
-        expect(res == 404).true;
-
-        let resGetTwo: User[];
-        await getList(
-          { query: { } as any } as Request,
-          { json: (val) => (resGetTwo = val) } as Response,
-          null as NextFunction
-        );
+      it('should not update any users when wrong id', () => {
+        let resGetOne: User[] = getList({})[0];
+        try {
+          patchById('10', newUserFixtureWithoutId)
+        }
+        catch (error){
+          expect(error.message == "id not found").true
+        }
+        let resGetTwo: User[] = getList({})[0];
 
         expect(resGetOne.length == resGetTwo.length).true;
         for (let i = 0; i < resGetOne.length; i++) {
             expect(_.isEqual(resGetOne[i], resGetTwo[i])).true;
         }
       });
-      it('should delete user by id', async () => {
-        let res;
-        await deleteById(
-          { params: {id: "0"} as any } as Request,
-          { send: (val) => (res = val) as any} as Response,
-          null as NextFunction
-        );
+      it('should delete user by id', () => {
+        let res = deleteById('0');
         expect(res == "deleted").true;
-        await getById(
-            { params: {id: "0"} as any } as Request,
-            { status: (val) => (res = val) as any, json: (dummy) => {}} as Response,
-            null as NextFunction
-          );
-          expect(res == 404).true;
+        try {
+          getById('0')
+        }
+        catch (error){
+          expect(error.message == "id not found").true
+          return;
+        }
+        expect(true, "non reachable").false;
       });
-      it('should fail when delete user by wrong id', async () => {
-        let resGetOne: User[];
-        await getList(
-          { query: { } as any } as Request,
-          { json: (val) => (resGetOne = val) } as Response,
-          null as NextFunction
-        );
+      it('should fail when delete user by wrong id', () => {
+        let resGetOne: User[] = getList({})[0];
 
-        let resDelete;
-        await deleteById(
-          { params: {id: "10"} as any } as Request,
-          { send: (val) => (val) as any, status: (val) => (resDelete = val) as any} as Response,
-          null as NextFunction
-        );
-        expect(resDelete == 404).true;
-
-        let resGetTwo: User[];
-        await getList(
-          { query: { } as any } as Request,
-          { json: (val) => (resGetTwo = val) } as Response,
-          null as NextFunction
-        );
+        try {
+          deleteById('10')
+        }
+        catch (error){
+          expect(error.message == "id not found").true
+        }
+        let resGetTwo: User[] = getList({})[0];
 
         expect(resGetOne.length == resGetTwo.length).true;
       });

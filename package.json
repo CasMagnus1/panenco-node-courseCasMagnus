@@ -11,8 +11,15 @@
     "dev": "nodemon ./src/server.ts"
   },
   "dependencies": {
+    "@panenco/papi": "^1.0.4",
+    "class-validator-jsonschema": "^3.1.1",
+    "cors": "^2.8.5",
     "express": "^4.18.1",
-    "lodash": "^4.17.21"
+    "express-async-errors": "^3.1.1",
+    "lodash": "^4.17.21",
+    "routing-controllers": "^0.9.0",
+    "routing-controllers-openapi": "^3.1.0",
+    "swagger-ui-express": "^4.4.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.1",

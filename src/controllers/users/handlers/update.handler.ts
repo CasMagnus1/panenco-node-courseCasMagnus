@@ -1,14 +1,13 @@
-import { UserStore } from "./user.store";
+import { User, UserStore } from "./user.store";
 import { NextFunction, Request, Response } from "express";
+import { UserBody } from "../../../contracts/user.body";
+import { NotFound } from "@panenco/papi";
 
-export const patchById = async (req: Request, res: Response, next: NextFunction) => {
-    const id = Number(req.params.id);
-    const user = UserStore.get(id);
+export const patchById = (id: string, body: UserBody) => {
+    const user = UserStore.get(parseInt(id));
     if (!user) {
-      res.status(404);
-      return res.json({ error: 'User not found' });
+      throw new NotFound("id not found", "id not found");
     }
-    const updated = UserStore.update(id, req.body);
-    res.locals.body = updated; // Set the result on the locals object to pass it to the representation middleware.
-    next(); // call next so the representation middleware is actually fired
+    const updated = UserStore.update(parseInt(id), body as User);
+    return  updated; // Set the result on the locals object to pass it to the representation middleware.
 }
