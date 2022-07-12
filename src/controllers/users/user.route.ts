@@ -10,7 +10,7 @@ import { validate } from 'class-validator';
 import { UserView } from '../../contracts/user.view';
 
 const adminMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-    if (req.get('x-auth') == "password") next();
+    if (req.get('x-auth') == "api-key") next();
     else res.status(401).send("not authorized");
 }
 

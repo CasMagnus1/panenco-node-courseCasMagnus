@@ -11,10 +11,10 @@ export class App {
     // Init server
     this.host = express();
     this.host.use(express.json());
-    this.host.use((req, res, next) => {
-        console.log(req.method, req.url);
-        next();
-    })
+    // this.host.use((req, res, next) => {
+    //     console.log(req.method, req.url);
+    //     next();
+    // })
     const userRouter = new UserRoute();
     this.host.use(`/api/${userRouter.path}`, userRouter.router);
     this.host.use((req, res, next) => {
