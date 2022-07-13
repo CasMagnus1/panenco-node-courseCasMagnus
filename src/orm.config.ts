@@ -23,4 +23,6 @@ export default {
   port: 5432,
   ssl: false,
   findOneOrFailHandler: noEntityFoundError,
+  logger: console.log.bind(console),
+  debug: true,
 } as Options<PostgreSqlDriver>;

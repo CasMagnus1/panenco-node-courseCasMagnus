@@ -1,5 +1,7 @@
-import { BaseEntity, Entity, PrimaryKey, Property } from "@mikro-orm/core";
+import { BaseEntity, Collection, Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from "@mikro-orm/core";
 import { v4 } from 'uuid';
+import { Address } from "./address.entity";
+import { Book } from "./book.entity";
 
 @Entity()
 export class User extends BaseEntity<User, 'id'>{
@@ -14,4 +16,10 @@ export class User extends BaseEntity<User, 'id'>{
 
     @Property()
     public password: string;
+
+    @OneToOne()
+    public address: Address
+
+    @ManyToMany(() => Book, 'authors', { owner: true })
+    books = new Collection<Book>(this);
 }

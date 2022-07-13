@@ -30,10 +30,10 @@ export class UserController {
     }
   
     @Get('/:id')
-    @Representer(UserView)
     @Authorized()
+    @Representer(UserView)
     async get(@Param("id") id: string) {
-      return getById(id);
+      return await getById(id);
     }
   
     @Patch('/:id')

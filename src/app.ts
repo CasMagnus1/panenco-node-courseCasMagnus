@@ -39,10 +39,6 @@ export class App {
     // this.host.use(`/api/${userRouter.path}`, userRouter.router);
     this.initializeControllers([UserController, AuthController]);
     this.initializeSwagger();
-    this.host.use((req, res, next) => {
-        res.status(404);
-        res.json({"details":"page not found"});
-    })
     this.host.use(errorMiddleware);
   }
 
