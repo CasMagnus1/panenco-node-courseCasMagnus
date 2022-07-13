@@ -8,13 +8,28 @@ import { errorMiddleware, getAuthenticator } from '@panenco/papi';
 import { AuthController } from './controllers/auth/auth.controller';
 import { routingControllersToSpec } from 'routing-controllers-openapi';
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
+import { MikroORM, RequestContext } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import ormConfig from './orm.config';
 
 export class App {
+  public orm: MikroORM<PostgreSqlDriver>;
+  public async createConnection() {
+    try {
+      this.orm = await MikroORM.init(ormConfig);
+    } catch (error) {
+      console.log('Error while connecting to the database', error);
+    }
+  }
+
   host: Application;
 
   constructor() {
     // Init server
     this.host = express();
+    this.host.use((req, __, next: NextFunction) => {
+      RequestContext.create(this.orm.em, next);
+    });
     this.host.use(express.json());
     this.host.use((req, res, next) => {
         console.log(req.method, req.url);

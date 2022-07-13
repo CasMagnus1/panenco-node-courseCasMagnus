@@ -1,5 +1,7 @@
-// src/server.js
 import { App } from './app';
 
-const app = new App();
-app.listen();
+(async () => {
+  const app = new App();
+  await app.createConnection();
+  app.listen();
+})();

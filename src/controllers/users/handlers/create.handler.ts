@@ -1,11 +1,10 @@
-import { NextFunction, Request, Response } from "express";
-import { plainToInstance } from "class-transformer";
-import { User, UserStore } from "./user.store";
 import { UserBody } from "../../../contracts/user.body";
-import { validate } from "class-validator";
-import { UserView } from "../../../contracts/user.view";
+import { RequestContext } from "@mikro-orm/core";
+import { User } from "../../../entities/user.entity"
 
-export const createUser = (body: UserBody) => {
-    const user = UserStore.add(body);
+export const createUser = async (body: UserBody) => {
+    const em = RequestContext.getEntityManager();
+    const user = em.create(User, body);
+    await em.persistAndFlush(user);
     return user;
 }

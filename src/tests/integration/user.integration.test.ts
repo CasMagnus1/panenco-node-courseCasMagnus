@@ -5,6 +5,9 @@ import { App } from "../../app";
 import { User, UserStore } from "../../controllers/users/handlers/user.store";
 import _ from "lodash";
 import { StatusCode } from "@panenco/papi";
+import { MikroORM } from "@mikro-orm/core";
+import { PostgreSqlDriver } from "@mikro-orm/postgresql";
+import ormConfig from "../../orm.config";
 
 const createUserFixtureWithoutId = {
     name: 'test',
@@ -27,13 +30,19 @@ const updateUserFixtureWithoutId = {
 describe('Integration tests', () => {
     describe('User Tests', () => {
         let request: supertest.SuperTest<supertest.Test>;
-        before(() => {
-            UserStore.users = [];
-        });
-        beforeEach(() => {
+        let orm: MikroORM<PostgreSqlDriver>;
+        before(async () => {
             const app = new App();
+            await app.createConnection();
+            orm = app.orm;
             request = supertest(app.host);
+            await orm.em.execute(`DROP SCHEMA public CASCADE; CREATE SCHEMA public;`);
+            await orm.getMigrator().up();
         });
+        // beforeEach(async () => {
+        //     await orm.em.execute(`DROP SCHEMA public CASCADE; CREATE SCHEMA public;`);
+        //     await orm.getMigrator().up();
+        //   });
         let token;
         let resCreate: request.Response;
         it('create user', async () => {
